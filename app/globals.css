@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-jetbrains-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -134,6 +134,24 @@
   body {
     @apply bg-background text-foreground;
   }
+  .app-shell {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #020617 0%, #020617 55%, #030712 100%);
+  }
+  .app-shell-background {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 14% 18%, rgba(34, 211, 238, 0.16), transparent 30%),
+      radial-gradient(circle at 86% 14%, rgba(251, 191, 36, 0.14), transparent 28%),
+      radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.12), transparent 34%);
+  }
+  .app-shell-content {
+    position: relative;
+    min-height: 100vh;
+  }
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
@@ -162,35 +180,46 @@
   }
 }
 
-/* Custom animations */
+/* ── Keyframe Animations ── */
+
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(8px); }
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-16px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes scale-up {
-  from { opacity: 0; transform: scale(0.94); }
+@keyframes fade-grow {
+  from { opacity: 0; transform: scale(0.92); }
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 @keyframes pulse-ring {
-  0% { transform: scale(0.9); opacity: 0.35; }
-  100% { transform: scale(1.35); opacity: 0; }
+  0% { transform: scale(0.85); opacity: 0.4; }
+  100% { transform: scale(1.5); opacity: 0; }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-10px); }
 }
 
 @keyframes shimmer {
@@ -199,62 +228,196 @@
 }
 
 @keyframes recording-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(79,70,229,0.3); }
-  50% { box-shadow: 0 0 0 12px rgba(79,70,229,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.35); }
+  50% { box-shadow: 0 0 0 14px rgba(99,102,241,0); }
 }
 
-.anim-fade-up { animation: fade-up 0.5s ease-out forwards; }
-.anim-fade-in { animation: fade-in 0.4s ease-out forwards; }
-.anim-slide-up { animation: slide-up 0.35s ease-out forwards; }
-.anim-scale-up { animation: scale-up 0.4s ease-out forwards; }
+@keyframes status-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes draw-border {
+  from { stroke-dashoffset: 100%; }
+  to { stroke-dashoffset: 0%; }
+}
+
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes card-pop {
+  0% { opacity: 0; transform: scale(0.95) translateY(6px); }
+  70% { transform: scale(1.01); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes orb-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(99,102,241,0.3)); }
+  50% { filter: drop-shadow(0 0 20px rgba(99,102,241,0.6)); }
+}
+
+/* ── Animation Utility Classes ── */
+
+.anim-fade-up {
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-fade-down {
+  animation: fade-down 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-zoom-in {
+  animation: fade-grow 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-left {
+  animation: slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-msg-in {
+  animation: message-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-card-pop {
+  animation: card-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-status-breathe {
+  animation: status-breathe 2s ease-in-out infinite;
+}
+
+.anim-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.anim-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* Staggered delay helpers */
 .delay-1 { animation-delay: 0.08s; opacity: 0; }
 .delay-2 { animation-delay: 0.16s; opacity: 0; }
 .delay-3 { animation-delay: 0.24s; opacity: 0; }
 .delay-4 { animation-delay: 0.32s; opacity: 0; }
-.delay-5 { animation-delay: 0.4s; opacity: 0; }
+.delay-5 { animation-delay: 0.40s; opacity: 0; }
+.delay-6 { animation-delay: 0.48s; opacity: 0; }
+.delay-7 { animation-delay: 0.56s; opacity: 0; }
+.delay-8 { animation-delay: 0.64s; opacity: 0; }
+
+/* ── Orb rings for landing page ── */
 
 .orb-ring {
   position: absolute;
-  inset: -12px;
+  inset: -14px;
   border-radius: 50%;
-  border: 1.5px solid rgba(79,70,229,0.1);
-  animation: pulse-ring 2s ease-out infinite;
+  border: 1.5px solid rgba(99,102,241,0.12);
+  animation: pulse-ring 2.4s ease-out infinite;
 }
-.orb-ring:nth-child(2) { animation-delay: 0.65s; }
-.orb-ring:nth-child(3) { animation-delay: 1.3s; }
+.orb-ring:nth-child(2) { animation-delay: 0.8s; }
+.orb-ring:nth-child(3) { animation-delay: 1.6s; }
+
+/* ── Typing indicator dots ── */
+
+.typing-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: typing-dot 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Button styles ── */
 
 .btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
   font-weight: 600;
   border: none;
-  border-radius: 16px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
-.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
-.btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-.btn-record {
-  background: var(--card);
-  border: 2px solid var(--primary);
-  color: var(--primary);
-  font-weight: 600;
-  border-radius: 16px;
-  cursor: pointer;
-  animation: recording-pulse 1.5s ease-in-out infinite;
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.25s;
 }
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(99,102,241,0.35);
+}
+.btn-primary:hover::after { opacity: 1; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+.btn-primary:disabled::after { opacity: 0; }
 
 .btn-danger-custom {
   background: oklch(0.97 0.01 27);
   border: 1px solid oklch(0.92 0.04 27);
   color: var(--destructive);
   font-weight: 500;
-  border-radius: 16px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .btn-danger-custom:hover { background: oklch(0.95 0.02 27); }
+
+/* ── Shimmer sweep for loading cards ── */
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Smooth focus ring with indigo accent ── */
+.focus-ring {
+  @apply outline-none ring-2 ring-indigo-500/50 ring-offset-0 ring-offset-transparent;
+}
+
+/* ── Glass card ── */
+.glass-card {
+  @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl;
+}

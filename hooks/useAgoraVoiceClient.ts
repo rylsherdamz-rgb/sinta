@@ -191,7 +191,7 @@ export function useAgoraVoiceClient() {
 
         voiceAI.on(
           AgoraVoiceAIEvents.TRANSCRIPT_UPDATED,
-          (messages: TranscriptHelperItem[]) => {
+          (messages: TranscriptHelperItem<unknown>[]) => {
             const fixSpacing = (t: string) =>
               t.replace(/([.!?,:;])([A-Za-z])/g, "$1 $2");
             const convertedMessages = messages.map((m) => ({
@@ -199,7 +199,7 @@ export function useAgoraVoiceClient() {
               uid: m.uid,
               text: fixSpacing(m.text),
               status: m.status,
-              timestamp: m.timestamp,
+              timestamp: m._time,
             }));
 
             const completedMessages = convertedMessages
@@ -215,14 +215,27 @@ export function useAgoraVoiceClient() {
           },
         );
 
+        voiceAI.on(
+          AgoraVoiceAIEvents.AGENT_STATE_CHANGED,
+          (_agentUserId, event) => {
+            console.debug("[useAgoraVoiceClient] agent state changed", event);
+          },
+        );
+
         voiceAIRef.current = voiceAI;
 
         try {
           await rtmClient.login({ token: config.token ?? undefined });
-          await rtmClient.subscribe(config.channel, { withMessage: true });
+          await rtmClient.subscribe(config.channel, {
+            withMessage: true,
+            withPresence: true,
+          });
           voiceAI.subscribeMessage(config.channel);
         } catch (rtmErr) {
-          console.warn("[useAgoraVoiceClient] RTM login failed — continuing with voice only. Enable RTM in Agora Console for transcripts.", rtmErr);
+          console.warn(
+            "[useAgoraVoiceClient] RTM subscribe failed; transcripts and agent state will be unavailable until RTM presence works.",
+            rtmErr,
+          );
         }
 
         await rtcClient.join(

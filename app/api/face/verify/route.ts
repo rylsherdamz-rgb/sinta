@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/server/db";
-import { completeVerification } from "@/lib/server/mcp/verify";
+import { completeVerification, getVerificationByChannel, createVerificationSession, getVerificationSession } from "@/lib/server/mcp/verify";
 
 export const runtime = "nodejs";
 
@@ -93,8 +93,19 @@ function analyzeIdCard(base64Data: string): { isValid: boolean; confidence: numb
   }
 }
 
+interface FaceVerifyRequest {
+  method?: string;
+  faceData?: string;
+  idData?: string;
+  sessionId?: string;
+  studentName?: string;
+  studentId?: string;
+  channelName?: string;
+  channel_name?: string;
+}
+
 export async function POST(req: NextRequest) {
-  let body: { method?: string; faceData?: string; idData?: string; sessionId?: string; studentName?: string; studentId?: string };
+  let body: FaceVerifyRequest;
   try {
     body = await req.json();
   } catch {
@@ -102,13 +113,25 @@ export async function POST(req: NextRequest) {
   }
 
   const method = body.method || "face";
+  const channelName = body.channelName || body.channel_name || "";
   const bypass = process.env.BYPASS_FACE_VERIFY === "true";
+
+  const resolveSessionId = async (): Promise<string | undefined> => {
+    if (body.sessionId) return body.sessionId;
+    if (!channelName) return undefined;
+    const existing = getVerificationByChannel(channelName);
+    if (existing) return existing.id;
+    const session = createVerificationSession({ channelName });
+    return session.id;
+  };
+
+  const sessionId = await resolveSessionId();
 
   if (bypass) {
     const result: FaceVerifyResult = { verified: true, confidence: 0.98, message: "Identity verified (dev mode).", method };
-    if (body.sessionId) {
-      completeVerification(body.sessionId, { verified: true, confidence: 0.98 });
-      result.sessionId = body.sessionId;
+    if (sessionId) {
+      completeVerification(sessionId, { verified: true, confidence: 0.98 });
+      result.sessionId = sessionId;
     }
     return NextResponse.json(result);
   }
@@ -125,9 +148,9 @@ export async function POST(req: NextRequest) {
       method: "face",
     };
 
-    if (body.sessionId) {
-      completeVerification(body.sessionId, { verified: result.verified, confidence: result.confidence, imageData: body.faceData });
-      result.sessionId = body.sessionId;
+    if (sessionId) {
+      completeVerification(sessionId, { verified: result.verified, confidence: result.confidence, imageData: body.faceData });
+      result.sessionId = sessionId;
     }
 
     return NextResponse.json(result);
@@ -143,9 +166,9 @@ export async function POST(req: NextRequest) {
       method: "id_card",
     };
 
-    if (body.sessionId) {
-      completeVerification(body.sessionId, { verified: result.verified, confidence: result.confidence, imageData: body.idData });
-      result.sessionId = body.sessionId;
+    if (sessionId) {
+      completeVerification(sessionId, { verified: result.verified, confidence: result.confidence, imageData: body.idData });
+      result.sessionId = sessionId;
     }
 
     return NextResponse.json(result);
