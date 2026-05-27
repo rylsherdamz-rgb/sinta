@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: ai-customer-service
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/mcp
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_AGORA_APP_ID
+        sync: false
+      - key: NEXT_PUBLIC_AGORA_BOT_UID
+        sync: false
+      - key: AGORA_APP_CERTIFICATE
+        sync: false
+      - key: AGORA_CUSTOMER_ID
+        sync: false
+      - key: AGORA_CUSTOMER_SECRET
+        sync: false
+      - key: AGORA_CONVO_AI_BASE_URL
+        sync: false
+      - key: AGORA_TOKEN_TTL_SECONDS
+        sync: false
+      - key: LLM_URL
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: LLM_MAX_TOKENS
+        sync: false
+      - key: LLM_TEMPERATURE
+        sync: false
+      - key: LLM_TOP_P
+        sync: false
+      - key: TTS_VENDOR
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        sync: false
+      - key: ELEVENLABS_MODEL_ID
+        sync: false
+      - key: ELEVENLABS_SAMPLE_RATE
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+      - key: MCP_SERVER_URL
+        sync: false
+      - key: BYPASS_FACE_VERIFY
+        sync: false
